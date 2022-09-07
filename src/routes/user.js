@@ -1,5 +1,7 @@
 import express from "express";
 
+import { addToken, refreshToken, findTokenByUsername } from "../token.js";
+
 import {
   checkUserInDatabase,
   saveUserToDatabase,
@@ -7,8 +9,6 @@ import {
 } from "../db.js";
 
 const router = express.Router();
-
-const tokens = [];
 
 router.post("/login", (request, response) => {
   const { username, password } = request.body;
@@ -21,14 +21,15 @@ router.post("/login", (request, response) => {
   if (!userAuthenticated)
     return response.status(400).send("Invalid username or password");
 
-  const indexOfExisitngToken = tokens.findIndex(
-    (user) => user.username === username
-  );
+  const indexOfExisitngToken = findTokenByUsername({ username });
 
   if (indexOfExisitngToken !== -1) {
-    tokens[indexOfExisitngToken].authToken = userAuthenticated.authToken;
+    refreshToken({ username, authToken: userAuthenticated.authToken });
   } else {
-    tokens.push({ username, authToken: userAuthenticated.authToken });
+    addToken({
+      index: indexOfExisitngToken,
+      authToken: userAuthenticated.authToken,
+    });
   }
 
   response.send(userAuthenticated.authToken);
