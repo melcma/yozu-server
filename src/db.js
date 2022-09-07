@@ -33,10 +33,12 @@ export const saveUserToDatabase = ({ username, password }) => {
 };
 
 export const getFeed = ({ username }) => {
-  return users
+  const posts = users
     .get("users")
     .filter((u) => u.username === username)
-    .value()[0].posts;
+    .value();
+
+  return posts.length > 0 ? posts[0].posts : [];
 };
 
 export const addFeed = ({ username, title, message, tags }) => {
